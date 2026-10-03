@@ -5,7 +5,9 @@ const rows = ref<any[]>([])
 const refill = ref<any>(null)
 onMounted(async () => {
   rows.value = await api('/lanes')
-  try { refill.value = await api('/refills/run?location_id=1', { method: 'POST' }) } catch { /* */ }
+  // 只读取最近一次成功补货单做预览，不在浏览货道页时隐式落新单；
+  // 是否允许落新单统一由补货页"生成补货单"按同一时段窗口径触发。
+  try { refill.value = await api('/refills/latest?location_id=1') } catch { /* 无成功单 */ }
 })
 </script>
 <template>
