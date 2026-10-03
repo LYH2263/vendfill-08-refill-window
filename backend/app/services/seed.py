@@ -2,11 +2,21 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.models.models import Lane, Location, Sale
+from app.services.window import MINUTES_PER_DAY, current_minute_of_day
+
+
+def _seed_window() -> tuple[int, int]:
+    """极窄且当前时刻在外的初始窗：以当前分钟为基准平移半天，宽 1 分钟。"""
+    start = (current_minute_of_day() + MINUTES_PER_DAY // 2) % MINUTES_PER_DAY
+    return start, start + 1  # start <= 1439，故 end <= 1440，窗合法
+
 
 def seed_if_empty(db: Session) -> None:
     if (db.scalar(select(func.count()).select_from(Location)) or 0) > 0:
         return
-    loc = Location(code="VM-01", name="地铁口 A 点位", address="城东地铁 1 号口")
+    win_start, win_end = _seed_window()
+    loc = Location(code="VM-01", name="地铁口 A 点位", address="城东地铁 1 号口",
+                   window_start_min=win_start, window_end_min=win_end)
     db.add(loc); db.flush()
     lanes = [
         ("A1", "矿泉水", 20, 5, 0),

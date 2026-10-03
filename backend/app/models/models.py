@@ -9,6 +9,9 @@ class Location(Base):
     code: Mapped[str] = mapped_column(String(32), unique=True)
     name: Mapped[str] = mapped_column(String(128))
     address: Mapped[str] = mapped_column(String(256), default="")
+    # 补货时段窗：一天内分钟数，半开区间 [start, end)；两者皆空表示不限时段
+    window_start_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    window_end_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 class Lane(Base):
     __tablename__ = "lanes"
